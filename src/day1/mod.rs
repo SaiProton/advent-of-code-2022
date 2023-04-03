@@ -41,8 +41,13 @@ where
 }
 
 fn most_calories(filename: &str) -> Vec<i32> {
-    let elves = preprocess_calories(filename).expect("Could not read calories...");
-    println!("{:?}", elves);
+    // let elves = preprocess_calories(filename).expect("Could not read calories...");
+    let elves = match preprocess_calories(filename) {
+        Ok(e) => e,
+        Err(e) => panic!("{}", e),
+    };
+
+    println!("{elves:?}");
 
     elves[0].clone()
 }
