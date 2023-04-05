@@ -60,7 +60,7 @@ mod tests {
     fn part1() {
         assert_eq!(
             vec![1000, 2000, 3000],
-            most_calories("src/day1/calories-ex.txt")
+            most_calories("data/day1/calories-ex.txt")
         );
     }
 
