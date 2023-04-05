@@ -33,7 +33,17 @@
         inherit (pkgs) lib;
 
         craneLib = crane.lib.${system};
-        src = craneLib.cleanCargoSource (craneLib.path ./.);
+        src =
+          let
+            # Accommodates .txt files
+            textFilter = path: _type: builtins.match ".*txt$" path != null;
+            textOrCargo = path: type:
+              (textFilter path type) || (craneLib.filterCargoSources path type);
+          in
+          nixpkgs.lib.cleanSourceWith {
+            src = craneLib.path ./.;
+            filter = textOrCargo;
+          };
 
         # Common arguments can be set here to avoid repeating them later
         commonArgs = {
