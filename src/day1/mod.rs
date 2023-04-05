@@ -1,55 +1,34 @@
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::Path;
+mod utils;
 
-type Calories = i32;
-type Elf = Vec<Calories>;
+type Calorie = u32;
 
-// Utility function for getting the lines of a file.
-fn read_lines<P>(filename: P) -> Result<io::Lines<io::BufReader<File>>, io::Error>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
+pub fn main() {
+    println!("{}", most_calories("data/day1/calories.txt"));
 }
 
-// Preprocesses from the file contents to a Vector of elves.
-fn preprocess_calories<P>(filename: P) -> io::Result<Vec<Elf>>
-where
-    P: AsRef<Path>,
-{
-    let mut elves: Vec<Elf> = vec![];
-    let mut temp: Elf = vec![];
-
-    for line in read_lines(filename)? {
-        // If the line was successfully parsed, add it to the current inner vector,
-        // Otherwise, add it to the main el
-        if let Ok(parsed_line) = line?.parse::<Calories>() {
-            temp.push(parsed_line);
-        } else {
-            elves.push(temp);
-            temp = vec![];
-        }
-    }
-
-    if !temp.is_empty() {
-        elves.push(temp);
-    }
-
-    Ok(elves)
+fn convert_to_calorie(line: &str) -> Calorie {
+    line.parse::<Calorie>().map_or_else(
+        |err| panic!("Could not convert line to calorie: {err}"),
+        |calorie| calorie,
+    )
 }
 
-fn most_calories(filename: &str) -> Vec<i32> {
-    // let elves = preprocess_calories(filename).expect("Could not read calories...");
-    let elves = match preprocess_calories(filename) {
-        Ok(e) => e,
-        Err(e) => panic!("{}", e),
-    };
+fn most_calories(filename: &str) -> Calorie {
+    let most_calories = utils::read_file(filename)
+        .split("\n\n") // Splits into calorie groups.
+        .map(|calorie_group| {
+            calorie_group
+                .lines() // Splits calorie groups into lines.
+                .map(convert_to_calorie) // Attempt convert each line to calorie.
+                .sum::<Calorie>() // Sums the group of calories.
+        })
+        .max() // Finds the max of the summed calorie groups.
+        .map_or_else(
+            || panic!("Could not find maximum calorie count."),
+            |max| max,
+        );
 
-    println!("{elves:?}");
-
-    elves[0].clone()
+    most_calories
 }
 
 #[cfg(test)]
@@ -58,10 +37,8 @@ mod tests {
 
     #[test]
     fn part1() {
-        assert_eq!(
-            vec![1000, 2000, 3000],
-            most_calories("data/day1/calories-ex.txt")
-        );
+        assert_eq!(24_000, most_calories("data/day1/calories-ex.txt"));
+        assert_eq!(67_622, most_calories("data/day1/calories.txt"));
     }
 
     #[test]
