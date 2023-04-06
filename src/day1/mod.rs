@@ -1,4 +1,6 @@
-mod utils;
+use std::path::Path;
+
+use crate::utils;
 
 type Calorie = u32;
 
@@ -15,7 +17,10 @@ fn convert_to_calorie(line: &str) -> Calorie {
     )
 }
 
-fn most_calories(filename: &str, amount: usize) -> Calorie {
+fn most_calories<P>(filename: P, amount: usize) -> Calorie
+where
+    P: AsRef<Path>,
+{
     let mut elf_calories = utils::read_file(filename)
         .split("\n\n") // Splits into calorie groups.
         .map(|calorie_group| {
