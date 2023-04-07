@@ -1,5 +1,5 @@
 {
-  description = "Template cargo project";
+  description = "Advent of Code 2022";
 
   inputs = {
     nixpkgs.url = github:NixOS/nixpkgs/nixpkgs-unstable;
@@ -38,7 +38,6 @@
           root = craneLib.path ./.;
           include = [
             "src"
-            "data"
             "Cargo.lock"
             (nix-filter.lib.matchExt "rs")
             (nix-filter.lib.matchExt "toml")

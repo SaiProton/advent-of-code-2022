@@ -34,12 +34,12 @@ fn preprocess_plays(opponent: &str, player: &str) -> [u8; 2] {
     [
         // 'A' maps to 0, 'B' maps to 1, 'C' maps to 2
         (opponent.as_bytes().first().map_or_else(
-            || panic!("Could not convert the opponent character to an ascii value"),
+            || panic!("Could find the opponent character"),
             |ascii| ascii,
         ) - ASCII_NORMAL),
         // 'X' maps to 0, 'Y' maps to 1, 'Z' maps to 2
         (player.as_bytes().first().map_or_else(
-            || panic!("Could not convert the opponent character to an ascii value"),
+            || panic!("Could not find the player character"),
             |ascii| ascii,
         ) - (ASCII_NORMAL + PLAYER_ASCII_DIFF)),
     ]

@@ -2,6 +2,7 @@ use std::env;
 
 mod day1;
 mod day2;
+mod day3;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -17,6 +18,7 @@ fn main() {
     match module {
         "day1" => day1::main(),
         "day2" => day2::main(),
+        "day3" => day3::main(),
         _ => println!("Invalid module name."),
     }
 }
