@@ -1,18 +1,14 @@
-use std::path::Path;
-
-use crate::utils;
+const STRATEGY_TEST: &str = include_str!("strategy-ex.txt");
+const STRATEGY_REAL: &str = include_str!("strategy.txt");
 
 const ASCII_NORMAL: u8 = b"A"[0];
 const PLAYER_ASCII_DIFF: u8 = b"X"[0] - b"A"[0];
 
 type Score = u32;
 
-fn rock_paper_scissors<P>(filename: P, decrypt: bool) -> Score
-where
-    P: AsRef<Path>,
-{
+fn rock_paper_scissors(file_contents: &str, decrypt: bool) -> Score {
     // Takes each line of the strategy, computes the score, and takes the sum.
-    utils::read_file(filename)
+    file_contents
         .lines()
         .map(|line| play_round(line, decrypt))
         .sum()
@@ -71,8 +67,8 @@ fn determine_winner(opponent: i16, player: i16, decrypt: bool) -> u8 {
 }
 
 pub fn main() {
-    println!("{}", rock_paper_scissors("data/day2/strategy-ex.txt", true));
-    println!("{}", rock_paper_scissors("data/day2/strategy.txt", true));
+    println!("{}", rock_paper_scissors(STRATEGY_TEST, true));
+    println!("{}", rock_paper_scissors(STRATEGY_REAL, true));
 }
 
 #[cfg(test)]
@@ -81,13 +77,13 @@ mod tests {
 
     #[test]
     fn part1() {
-        assert_eq!(15, rock_paper_scissors("data/day2/strategy-ex.txt", false));
-        assert_eq!(11_386, rock_paper_scissors("data/day2/strategy.txt", false));
+        assert_eq!(15, rock_paper_scissors(STRATEGY_TEST, false));
+        assert_eq!(11_386, rock_paper_scissors(STRATEGY_REAL, false));
     }
 
     #[test]
     fn part2() {
-        assert_eq!(12, rock_paper_scissors("data/day2/strategy-ex.txt", true));
-        assert_eq!(13_600, rock_paper_scissors("data/day2/strategy.txt", true));
+        assert_eq!(12, rock_paper_scissors(STRATEGY_TEST, true));
+        assert_eq!(13_600, rock_paper_scissors(STRATEGY_REAL, true));
     }
 }

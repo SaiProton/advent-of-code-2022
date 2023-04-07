@@ -1,12 +1,11 @@
-use std::path::Path;
-
-use crate::utils;
+const CALORIES_TEST: &str = include_str!("calories-ex.txt");
+const CALORIES_REAL: &str = include_str!("calories.txt");
 
 type Calorie = u32;
 
 pub fn main() {
-    println!("{}", most_calories("data/day1/calories.txt", 1));
-    println!("{}", most_calories("data/day1/calories.txt", 3));
+    println!("{}", most_calories(CALORIES_TEST, 1));
+    println!("{}", most_calories(CALORIES_REAL, 3));
 }
 
 // Attempts to convert a string to a calorie.
@@ -17,11 +16,8 @@ fn convert_to_calorie(line: &str) -> Calorie {
     )
 }
 
-fn most_calories<P>(filename: P, amount: usize) -> Calorie
-where
-    P: AsRef<Path>,
-{
-    let mut elf_calories = utils::read_file(filename)
+fn most_calories(file_contents: &str, amount: usize) -> Calorie {
+    let mut elf_calories = file_contents
         .split("\n\n") // Splits into calorie groups.
         .map(|calorie_group| {
             calorie_group
@@ -41,13 +37,13 @@ mod tests {
 
     #[test]
     fn part1() {
-        assert_eq!(24_000, most_calories("data/day1/calories-ex.txt", 1));
-        assert_eq!(67_622, most_calories("data/day1/calories.txt", 1));
+        assert_eq!(24_000, most_calories(CALORIES_TEST, 1));
+        assert_eq!(67_622, most_calories(CALORIES_REAL, 1));
     }
 
     #[test]
     fn part2() {
-        assert_eq!(45_000, most_calories("data/day1/calories-ex.txt", 3));
-        assert_eq!(201_491, most_calories("data/day1/calories.txt", 3));
+        assert_eq!(45_000, most_calories(CALORIES_TEST, 3));
+        assert_eq!(201_491, most_calories(CALORIES_REAL, 3));
     }
 }

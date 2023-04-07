@@ -2,7 +2,6 @@ use std::env;
 
 mod day1;
 mod day2;
-mod utils;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
