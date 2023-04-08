@@ -1,5 +1,3 @@
-mod errors; // Custom error definitions.
-
 use std::{cmp::Ordering, convert::Into};
 
 // Holds the contents of each of the inputs files.
@@ -45,7 +43,7 @@ fn rucksack_priority(rucksack: &str) -> u32 {
     find_duplicate(compartments.0, compartments.1).map_or(0, Into::into)
 }
 
-fn item_to_priority(item: char) -> Result<Priority, errors::InvalidCharacterError> {
+fn item_to_priority(item: char) -> Result<Priority, String> {
     // Determines the normal to use based on whether the item is upper or lower case.
     let normal = if item.is_uppercase() {
         ASCII_UPPERCASE_NORMAL
@@ -53,8 +51,8 @@ fn item_to_priority(item: char) -> Result<Priority, errors::InvalidCharacterErro
         ASCII_LOWERCASE_NORMAL
     } else {
         // If the item is neither, it's invalid. So we throw an InvalidCharacterError.
-        return Err(errors::InvalidCharacterError::new(
-            "Character '{item}' is not an upper or lowercase letter.",
+        return Err(format!(
+            "Character '{item}' is not an upper or lowercase letter."
         ));
     };
 
@@ -89,13 +87,10 @@ mod tests {
     #[test]
     fn part1() {
         assert_eq!(157, rucksacks_sum(RUCKSACKS_TEST));
-        // assert_eq!(11_386, rock_paper_scissors(STRATEGY_REAL, false));
+        assert_eq!(8_240, rucksacks_sum(RUCKSACKS_REAL));
     }
 
-    #[test]
-    fn part2() {
-        assert_eq!(1, 1);
-        // assert_eq!(12, rock_paper_scissors(STRATEGY_TEST, true));
-        // assert_eq!(13_600, rock_paper_scissors(STRATEGY_REAL, true));
-    }
+    // #[test]
+    // fn part2() {
+    // }
 }
