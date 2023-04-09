@@ -6,20 +6,15 @@ const INSTRUCTIONS_REAL: &str = include_str!("instructions.txt");
 
 const ITEM_CHAR_SPACING: usize = 4;
 
-type Instruction = u32;
+type Instruction = usize;
 type Stack = Vec<char>;
-type Procedure = Vec<Instruction>;
+type Procedure = (Instruction, Instruction, Instruction);
 
 pub fn main() {
     let mut operator = CraneOperator::new();
 
     operator.load_instructions(INSTRUCTIONS_REAL);
     operator.load_instructions(INSTRUCTIONS_TEST);
-
-    let mut vec = vec![1, 2, 3, 4, 5];
-    for el in &mut vec {
-        *el *= 2;
-    }
 
     println!("{}", operator.rearrange_stacks());
 }
@@ -49,37 +44,32 @@ impl CraneOperator {
             |sections| sections,
         );
 
-        // Set to be populated with an appropriate amount of new stacks to hold the items.
         self.stacks = vec![Stack::new(); Self::get_stack_count(items_section)];
-        // Set procedures to be an empty vector.
         self.procedures = vec![];
 
-        // Loads the items into stacks.
         Self::load_items(items_section, &mut self.stacks);
-        // Loads the procedures into procedures.
         Self::load_procedures(procedures_section, &mut self.procedures);
     }
 
     /// Gets the appropriate amount of stacks to hold the items in `items_section`.
     fn get_stack_count(items_section: &str) -> usize {
         (items_section
-            .lines() 
+            .lines()
             .next() // First line of the items section
             .map_or_else(
                 || panic!("Could not read contents of the 'items' segment"),
                 |line| line,
             )
-            .len() // Length of first line.
+            .len()
             + 1)
-            / ITEM_CHAR_SPACING // Divide by horizontal spacing between each item character.
+            / ITEM_CHAR_SPACING // Dividing by the space between the items yields the count.
     }
 
     /// Loads items from `items_section` into `stacks`.
     fn load_items(items_section: &str, stacks: &mut [Stack]) {
-        // Pushes an item to the stacks given an index `i` and item `item`.
         let mut push_item = |i: usize, item: char| {
             stacks
-                .get_mut(i) // Attempts to get corresponding mutable stack.
+                .get_mut(i)
                 .map_or_else(
                     || panic!("Attempted to index out of bounds item when loading items"),
                     |stack| stack,
@@ -88,14 +78,12 @@ impl CraneOperator {
         };
 
         for line in items_section.lines() {
-            // Iterating over the items by stepping by the item spacing and skipping the first char. 
             for (i, item) in line.chars().skip(1).step_by(ITEM_CHAR_SPACING).enumerate() {
-                // Only pushes to a stack if the current item is an uppercase letter.
                 if item.is_uppercase() {
                     push_item(i, item);
                 }
             }
-        };
+        }
 
         // After adding all the items, reverse each of the stacks
         // so the items added first are 'on top' of the stack.
@@ -106,7 +94,6 @@ impl CraneOperator {
 
     /// Loads procedures from `procedures_section` into `procedures`.
     fn load_procedures(procedures_section: &str, procedures: &mut Vec<Procedure>) {
-        // Parses an `instruction` in string form to an `Instruction` type.
         let parse_instruction = |instruction: &str| {
             instruction.parse::<Instruction>().map_or_else(
                 |err| panic!("Could not convert string {instruction} to instruction: {err}"),
@@ -114,19 +101,56 @@ impl CraneOperator {
             )
         };
 
-        for line in procedures_section.lines() {
-            procedures.push(
-                line.split(' ') // Splitting by whitespace horizontally.
-                    .skip(1) // Skipping the first word.
-                    .step_by(2) // Every other element (to ignore the words).
-                    .map(parse_instruction) // Parses the element to an `Instruction`.
-                    .collect(), // Collects into a `Procedure`.
-            );
+        let preprocess_line = |line: &str| -> Procedure {
+            match line
+                .split(' ')
+                .skip(1) // Skips first word.
+                .step_by(2) // Skips other words.
+                .map(parse_instruction)
+                .collect::<Vec<_>>()[..]
+            {
+                [one, two, three] => (one, two, three),
+                _ => panic!("Procedure must have exactly three instructions."),
+            }
         };
+
+        for line in procedures_section.lines() {
+            procedures.push(preprocess_line(line));
+        }
     }
 
-    fn rearrange_stacks(&self) -> String {
-        format!("{:?}\n{:?}", self.stacks, self.procedures)
+    fn rearrange_stacks(&mut self) -> String {
+        let pop_stack = |stack: &mut Stack| -> char {
+            stack
+                .pop()
+                .map_or_else(|| panic!("Could not pop from the stack"), |element| element)
+        };
+
+        let perform_procedure = |stacks: &mut [Stack], source: &usize, destination: &usize| {
+            let popped = stacks.get_mut(*source - 1).map_or_else(
+                || panic!("Could not get source stack during move"),
+                pop_stack,
+            );
+
+            stacks
+                .get_mut(*destination - 1)
+                .map_or_else(
+                    || panic!("Could not get destination stack during move"),
+                    |dest| dest,
+                )
+                .push(popped);
+        };
+
+        for (moves, source, destination) in &self.procedures {
+            for _ in 0..*moves {
+                perform_procedure(&mut self.stacks, source, destination);
+            }
+        }
+
+        self.stacks
+            .iter_mut()
+            .map(|stack| pop_stack(stack))
+            .collect::<String>()
     }
 }
 
@@ -137,10 +161,12 @@ mod tests {
     #[test]
     fn part1() {
         let mut operator = CraneOperator::new();
-        operator.load_instructions(INSTRUCTIONS_TEST);
 
+        operator.load_instructions(INSTRUCTIONS_TEST);
         assert_eq!("CMZ", operator.rearrange_stacks());
-        // assert_eq!(560, pair_comparison(PAIRS_REAL, &range_contains));
+
+        operator.load_instructions(INSTRUCTIONS_REAL);
+        assert_eq!("MQTPGLLDN", operator.rearrange_stacks());
     }
 
     // #[test]
