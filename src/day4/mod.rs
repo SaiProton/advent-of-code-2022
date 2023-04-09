@@ -9,7 +9,7 @@ type Pair<T> = (T, T);
 pub fn main() {
     println!("{}", pair_comparison(PAIRS_TEST, &range_contains));
     println!("{}", pair_comparison(PAIRS_REAL, &range_contains));
-    // println!("{}", pair_comparison(PAIRS_TEST, &range_overlaps));
+    println!("{}", pair_comparison(PAIRS_TEST, &range_overlaps));
     println!("{}", pair_comparison(PAIRS_REAL, &range_overlaps));
 }
 
