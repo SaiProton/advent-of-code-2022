@@ -1,4 +1,9 @@
+mod modes;
+mod traits;
+
+use modes::CraneMode;
 use std::vec;
+use traits::Poppable;
 
 // Holds the contents of each of the inputs files.
 const INSTRUCTIONS_TEST: &str = include_str!("instructions-ex.txt");
@@ -16,7 +21,7 @@ pub fn main() {
     operator.load_instructions(INSTRUCTIONS_REAL);
     operator.load_instructions(INSTRUCTIONS_TEST);
 
-    println!("{}", operator.rearrange_stacks());
+    println!("{}", operator.rearrange_stacks(&CraneMode::Mode9000));
 }
 
 /// `CraneOperator` struct.
@@ -119,37 +124,16 @@ impl CraneOperator {
         }
     }
 
-    fn rearrange_stacks(&mut self) -> String {
-        let pop_stack = |stack: &mut Stack| -> char {
-            stack
-                .pop()
-                .map_or_else(|| panic!("Could not pop from the stack"), |element| element)
-        };
-
-        let perform_procedure = |stacks: &mut [Stack], source: &usize, destination: &usize| {
-            let popped = stacks.get_mut(*source - 1).map_or_else(
-                || panic!("Could not get source stack during move"),
-                pop_stack,
-            );
-
-            stacks
-                .get_mut(*destination - 1)
-                .map_or_else(
-                    || panic!("Could not get destination stack during move"),
-                    |dest| dest,
-                )
-                .push(popped);
-        };
-
+    fn rearrange_stacks(&mut self, mode: &CraneMode) -> String {
         for (moves, source, destination) in &self.procedures {
-            for _ in 0..*moves {
-                perform_procedure(&mut self.stacks, source, destination);
+            for mv in 0..*moves {
+                mode.perform_procedure(&mut self.stacks, mv, *source, *destination);
             }
         }
 
         self.stacks
             .iter_mut()
-            .map(|stack| pop_stack(stack))
+            .map(|stack| stack.try_pop("Could not pop from stack after procedures."))
             .collect::<String>()
     }
 }
@@ -163,10 +147,10 @@ mod tests {
         let mut operator = CraneOperator::new();
 
         operator.load_instructions(INSTRUCTIONS_TEST);
-        assert_eq!("CMZ", operator.rearrange_stacks());
+        assert_eq!("CMZ", operator.rearrange_stacks(&CraneMode::Mode9000));
 
         operator.load_instructions(INSTRUCTIONS_REAL);
-        assert_eq!("MQTPGLLDN", operator.rearrange_stacks());
+        assert_eq!("MQTPGLLDN", operator.rearrange_stacks(&CraneMode::Mode9000));
     }
 
     // #[test]
