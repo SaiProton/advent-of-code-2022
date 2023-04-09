@@ -17,11 +17,17 @@ type Procedure = (Instruction, Instruction, Instruction);
 
 pub fn main() {
     let mut operator = CraneOperator::new();
+    let mut mode = CraneMode::Mode9000;
+
+    operator.load_instructions(INSTRUCTIONS_TEST);
+    operator.rearrange_stacks(&mode);
+    println!("{}", operator.pop_top_string());
+
+    mode = CraneMode::Mode9001;
 
     operator.load_instructions(INSTRUCTIONS_REAL);
-    operator.load_instructions(INSTRUCTIONS_TEST);
-
-    println!("{}", operator.rearrange_stacks(&CraneMode::Mode9000));
+    operator.rearrange_stacks(&mode);
+    println!("{}", operator.pop_top_string());
 }
 
 /// `CraneOperator` struct.
@@ -114,7 +120,7 @@ impl CraneOperator {
                 .map(parse_instruction)
                 .collect::<Vec<_>>()[..]
             {
-                [one, two, three] => (one, two, three),
+                [moves, source, destination] => (moves, source, destination),
                 _ => panic!("Procedure must have exactly three instructions."),
             }
         };
@@ -124,13 +130,13 @@ impl CraneOperator {
         }
     }
 
-    fn rearrange_stacks(&mut self, mode: &CraneMode) -> String {
+    fn rearrange_stacks(&mut self, mode: &CraneMode) {
         for (moves, source, destination) in &self.procedures {
-            for mv in 0..*moves {
-                mode.perform_procedure(&mut self.stacks, mv, *source, *destination);
-            }
+            mode.perform_procedure(&mut self.stacks, *moves, *source, *destination);
         }
+    }
 
+    fn pop_top_string(&mut self) -> String {
         self.stacks
             .iter_mut()
             .map(|stack| stack.try_pop("Could not pop from stack after procedures."))
@@ -145,17 +151,28 @@ mod tests {
     #[test]
     fn part1() {
         let mut operator = CraneOperator::new();
+        let mode = CraneMode::Mode9000;
 
         operator.load_instructions(INSTRUCTIONS_TEST);
-        assert_eq!("CMZ", operator.rearrange_stacks(&CraneMode::Mode9000));
+        operator.rearrange_stacks(&mode);
+        assert_eq!("CMZ", operator.pop_top_string());
 
         operator.load_instructions(INSTRUCTIONS_REAL);
-        assert_eq!("MQTPGLLDN", operator.rearrange_stacks(&CraneMode::Mode9000));
+        operator.rearrange_stacks(&mode);
+        assert_eq!("MQTPGLLDN", operator.pop_top_string());
     }
 
-    // #[test]
-    // fn part2() {
-    //     assert_eq!(4, pair_comparison(PAIRS_TEST, &range_overlaps));
-    //     assert_eq!(839, pair_comparison(PAIRS_REAL, &range_overlaps));
-    // }
+    #[test]
+    fn part2() {
+        let mut operator = CraneOperator::new();
+        let mode = CraneMode::Mode9001;
+
+        operator.load_instructions(INSTRUCTIONS_TEST);
+        operator.rearrange_stacks(&mode);
+        assert_eq!("MCD", operator.pop_top_string());
+
+        operator.load_instructions(INSTRUCTIONS_REAL);
+        operator.rearrange_stacks(&mode);
+        assert_eq!("LVZPSTTCZ", operator.pop_top_string());
+    }
 }
